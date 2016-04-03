@@ -11,6 +11,7 @@ import util.linalg.RectangularMatrix;
 import util.linalg.SymmetricEigenvalueDecomposition;
 import util.linalg.UpperTriangularMatrix;
 import util.linalg.Vector;
+import java.util.ArrayList;
 
 /**
  * A filter that performs fisher linear discriminant
@@ -44,15 +45,24 @@ public class LinearDiscriminantAnalysis implements ReversibleFilter {
             dataSet.setDescription(new DataSetDescription(dataSet));
         }
         
+        ArrayList<Integer> classes = new ArrayList<Integer>();
+
+        // Create a mapping of int labels to indices
+        for (int i = 0; i < dataSet.size(); i++) {
+          int l = dataSet.get(i).getLabel().getDiscrete();
+          if (!classes.contains(l)) {
+            classes.add(l);
+          }
+        }
+
         // calculate the class counts and weight sums
-        int classCount = dataSet.getDescription()
-             .getLabelDescription().getDiscreteRange();
+        int classCount = classes.size();
         int toKeep = classCount - 1;
         int[] classCounts = new int[classCount];
         double[] weightSums = new double[classCount];
         double weightSum = 0;
         for (int i = 0; i < dataSet.size(); i++) {
-            int classification = dataSet.get(i).getLabel().getDiscrete();
+            int classification = classes.indexOf(dataSet.get(i).getLabel().getDiscrete());
             classCounts[classification]++;
             weightSums[classification] += dataSet.get(i).getWeight();
             weightSum += dataSet.get(i).getWeight();
@@ -68,7 +78,7 @@ public class LinearDiscriminantAnalysis implements ReversibleFilter {
             classCounts[i] = 0;
         }
         for (int i = 0; i < dataSet.size(); i++) {
-            int classification = dataSet.get(i).getLabel().getDiscrete();
+            int classification = classes.indexOf(dataSet.get(i).getLabel().getDiscrete());
             instances[classification][classCounts[classification]] = dataSet.get(i);
             classCounts[classification]++;
         }
